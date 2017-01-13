@@ -1,0 +1,63 @@
+/* mbed Microcontroller Library
+ * Copyright (c) 2006-2013 ARM Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#ifndef MBED_FLASH_DATA_H
+#define MBED_FLASH_DATA_H
+
+// This file is automagically generated
+
+#include "stdint.h"
+
+// Target flash algorithm structure
+typedef struct {
+    const uint32_t init;
+    const uint32_t uninit;
+    const uint32_t erase_page;
+    const uint32_t erase_chip;
+    const uint32_t verify;
+    const uint32_t program_page;
+    const uint32_t program_buffer;
+    const uint32_t program_buffer_size;
+    const uint32_t algo_start;
+    const uint32_t algo_size;
+    const uint32_t *algo_blob;
+} flash_algo_t;
+
+// Target flash configuration
+struct flash_s {
+    uint32_t sector_size;
+    uint32_t sector_cnt;
+    uint32_t flash_start;
+    uint32_t flash_end;
+    uint32_t ram_start;
+    uint32_t ram_end;
+    flash_algo_t *flash_algo;
+    uint8_t erase_reset;
+};
+
+// prototypes for flash algo CMSIS API
+
+typedef int (*CMSIS_Algo_Function_Init)(unsigned long adr, unsigned long clk, unsigned long fnc);
+typedef int (*CMSIS_Algo_Function_UnInit)(unsigned long fnc);
+typedef int (*CMSIS_Algo_Function_EraseSector)(unsigned long adr);
+typedef int (*CMSIS_Algo_Function_EraseChip)(void);
+typedef int (*CMSIS_Algo_Function_ProgramPage)(unsigned long adr, unsigned long sz, unsigned char *buf);
+typedef unsigned long (*CMSIS_Algo_Function_Verify)(unsigned long adr, unsigned long sz, unsigned char *buf);
+
+
+
+
+
+#endif
