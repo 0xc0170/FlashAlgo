@@ -33,7 +33,7 @@ static const flash_algo_t flash = {
     {{Verify}},
     {{ProgramPage}},
 
-    &{{name}}_FLM,
+    {{name}}_FLM,
 };
 
 int32_t flash_init(flash_t *obj)
@@ -41,7 +41,7 @@ int32_t flash_init(flash_t *obj)
     core_util_critical_section_enter();
     __ASM("push {r9}");
     __ASM("ldr r9, [r0, #16]");
-    int32_t ret = ((CMSIS_Algo_Functio\n_Init)obj->flash_algo->init)(obj->flash_start, 0, 0);
+    int32_t ret = ((CMSIS_Algo_Function_Init)obj->flash_algo->init)(obj->flash_start, 0, 0);
     __ASM("pop {r9}");
     core_util_critical_section_exit();
     return ret;
@@ -50,6 +50,7 @@ int32_t flash_init(flash_t *obj)
 int32_t flash_free(flash_t *obj)
 {
     // uninit is not called here as it deinitializes MCU
+    return 0;
 }
 
 
