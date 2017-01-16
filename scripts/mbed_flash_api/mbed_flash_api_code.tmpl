@@ -39,10 +39,22 @@ static const flash_algo_t flash = {
 int32_t flash_init(flash_t *obj)
 {
     core_util_critical_section_enter();
-    __ASM("push {r9}");
-    __ASM("ldr r9, [r0, #16]");
+
+    obj->sector_size = {{sector_size}};
+    obj->sector_cnt = {{sector_count}};
+    obj->flash_start = {{flash_start}};
+    obj->flash_end = {{flash_end}};
+    obj->ram_start = {{ram_start}};
+    obj->ram_end = {{ram_end}};
+    obj->flash_algo = &flash;
+
+    register uint32_t static_base __ASM("r9");
+    uint32_t previous_static_base = static_base;
+    static_base = obj->ram_start;
     int32_t ret = ((CMSIS_Algo_Function_Init)obj->flash_algo->init)(obj->flash_start, 0, 0);
-    __ASM("pop {r9}");
+    // revert back r9
+    static_base = previous_static_base;
+
     core_util_critical_section_exit();
     return ret;
 }
@@ -53,50 +65,61 @@ int32_t flash_free(flash_t *obj)
     return 0;
 }
 
-
 int32_t flash_erase_sector(flash_t *obj, uint32_t address)
 {
     core_util_critical_section_enter();
-    __ASM("push {r9}");
-    __ASM("ldr r9, [r0, #16]");
-    int32_t ret = (CMSIS_Algo_Function_EraseSector)obj->flash_algo->erase_page(address);
-    __ASM("pop {r9}");
+
+    register uint32_t static_base __ASM("r9");
+    uint32_t previous_static_base = static_base;
+    static_base = obj->ram_start;
+    int32_t ret = ((CMSIS_Algo_Function_EraseSector)obj->flash_algo->erase_page)(address);
+    // revert back r9
+    static_base = previous_static_base;
+
     core_util_critical_section_exit();
     return ret;
 }
-
 
 int32_t flash_erase_chip(flash_t *obj)
 {
     core_util_critical_section_enter();
-    __ASM("push {r9}");
-    __ASM("ldr r9, [r0, #16]");
+
+    register uint32_t static_base __ASM("r9");
+    uint32_t previous_static_base = static_base;
+    static_base = obj->ram_start;
     int32_t ret = ((CMSIS_Algo_Function_EraseChip)obj->flash_algo->erase_chip)();
-    __ASM("pop {r9}");
+    // revert back r9
+    static_base = previous_static_base;
+
     core_util_critical_section_exit();
     return ret;
 }
-
 
 int32_t flash_program_page(flash_t *obj, uint32_t address, const page_t *page)
 {
     core_util_critical_section_enter();
-    __ASM("push {r9}");
-    __ASM("ldr r9, [r0, #16]");
+    register uint32_t static_base __ASM("r9");
+    uint32_t previous_static_base = static_base;
+    static_base = obj->ram_start;
     int32_t ret = ((CMSIS_Algo_Function_ProgramPage)obj->flash_algo->program_page)(address, page->data_count , page->data);
-    __ASM("pop {r9}");
+    // revert back r9
+    static_base = previous_static_base;
+
     core_util_critical_section_exit();
     return ret;
 }
 
-
 int32_t flash_verify(flash_t *obj, uint32_t address, page_t *page)
 {
     core_util_critical_section_enter();
-    __ASM("push {r9}");
-    __ASM("ldr r9, [r0, #16]");
+
+    register uint32_t static_base __ASM("r9");
+    uint32_t previous_static_base = static_base;
+    static_base = obj->ram_start;
     int32_t ret = ((CMSIS_Algo_Function_Verify)obj->flash_algo->verify)(address, page->data_count,  page->data);
-    __ASM("pop {r9}");
+    // revert back r9
+    static_base = previous_static_base;
+
     core_util_critical_section_exit();
     return ret;
 }
