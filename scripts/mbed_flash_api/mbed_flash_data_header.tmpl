@@ -28,19 +28,18 @@ typedef struct {
     const uint32_t erase_chip;
     const uint32_t verify;
     const uint32_t program_page;
-    const uint32_t *algo_blob;
+    uint32_t *algo_blob;
 } flash_algo_t;
 
 // Target flash configuration
 struct flash_s {
     uint32_t sector_size;
-    uint32_t sector_cnt;
+    uint32_t sector_count;
     uint32_t flash_start;
     uint32_t flash_end;
     uint32_t ram_start;
     uint32_t ram_end;
-    flash_algo_t *flash_algo;
-    uint8_t erase_reset;
+    const flash_algo_t *flash_algo;
 };
 
 // prototypes for flash algo CMSIS API
