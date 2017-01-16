@@ -33,9 +33,7 @@ static const flash_algo_t flash = {
     {{Verify}},
     {{ProgramPage}},
 
-    {{algo_start}},
-    {{algo_size}},
-    {{flash_algo_array}},
+    &{{name}}_FLM,
 };
 
 int32_t flash_init(flash_t *obj)
