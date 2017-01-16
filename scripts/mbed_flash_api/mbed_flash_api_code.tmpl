@@ -40,7 +40,7 @@ int32_t flash_init(flash_t *obj)
 {
     core_util_critical_section_enter();
     __ASM("push {r9}");
-    __ASM("ldr r9, [r1, #16]");
+    __ASM("ldr r9, [r0, #16]");
     int32_t ret = ((CMSIS_Algo_Functio\n_Init)obj->flash_algo->init)(obj->flash_start, 0, 0);
     __ASM("pop {r9}");
     core_util_critical_section_exit();
@@ -57,7 +57,7 @@ int32_t flash_erase_sector(flash_t *obj, uint32_t address)
 {
     core_util_critical_section_enter();
     __ASM("push {r9}");
-    __ASM("ldr r9, [r1, #16]");
+    __ASM("ldr r9, [r0, #16]");
     int32_t ret = (CMSIS_Algo_Function_EraseSector)obj->flash_algo->erase_page(address);
     __ASM("pop {r9}");
     core_util_critical_section_exit();
@@ -69,7 +69,7 @@ int32_t flash_erase_chip(flash_t *obj)
 {
     core_util_critical_section_enter();
     __ASM("push {r9}");
-    __ASM("ldr r9, [r1, #16]");
+    __ASM("ldr r9, [r0, #16]");
     int32_t ret = ((CMSIS_Algo_Function_EraseChip)obj->flash_algo->erase_chip)();
     __ASM("pop {r9}");
     core_util_critical_section_exit();
@@ -81,7 +81,7 @@ int32_t flash_program_page(flash_t *obj, uint32_t address, const page_t *page)
 {
     core_util_critical_section_enter();
     __ASM("push {r9}");
-    __ASM("ldr r9, [r1, #16]");
+    __ASM("ldr r9, [r0, #16]");
     int32_t ret = ((CMSIS_Algo_Function_ProgramPage)obj->flash_algo->program_page)(address, page->data_count , page->data);
     __ASM("pop {r9}");
     core_util_critical_section_exit();
@@ -93,7 +93,7 @@ int32_t flash_verify(flash_t *obj, uint32_t address, page_t *page)
 {
     core_util_critical_section_enter();
     __ASM("push {r9}");
-    __ASM("ldr r9, [r1, #16]");
+    __ASM("ldr r9, [r0, #16]");
     int32_t ret = ((CMSIS_Algo_Function_Verify)obj->flash_algo->verify)(address, page->data_count,  page->data);
     __ASM("pop {r9}");
     core_util_critical_section_exit();
