@@ -31,14 +31,19 @@ typedef struct {
     uint32_t *algo_blob;
 } flash_algo_t;
 
-// Target flash configuration
+// Target configuration for flash and ram
+typedef struct {
+    const uint32_t sector_size;
+    const uint32_t sector_cnt;
+    const uint32_t flash_start;
+    const uint32_t flash_end;
+    const uint32_t ram_start;
+    const uint32_t ram_end;
+} flash_target_config_t;
+
+// Target flash API configuration
 struct flash_s {
-    uint32_t sector_size;
-    uint32_t sector_count;
-    uint32_t flash_start;
-    uint32_t flash_end;
-    uint32_t ram_start;
-    uint32_t ram_end;
+    const flash_target_config_t *target_config;
     const flash_algo_t *flash_algo;
 };
 
