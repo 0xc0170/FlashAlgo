@@ -45,6 +45,21 @@ static const flash_target_config_t flash_target_config = {
     .ram_end = {{ram_end}},
 };
 
+typedef void (*set_base_register)(uint32_t);
+typedef uint32_t (*get_base_register)(void);
+
+// 0x4681 mov r9, r0
+// 0x4770 bx lr
+static uint32_t set_base_register_blob[1] = {
+    0x47704681
+};
+
+// 0x4648 mov r9, r0
+// 0x4770 bx lr
+static uint32_t get_base_register_blob[1] = {
+    0x47704648
+};
+
 int32_t flash_init(flash_t *obj)
 {
     core_util_critical_section_enter();
@@ -52,12 +67,10 @@ int32_t flash_init(flash_t *obj)
     obj->target_config = &flash_target_config;
     obj->flash_algo = &flash_algo_config;
 
-    register uint32_t static_base __ASM("r9");
-    uint32_t previous_static_base = static_base;
-    static_base = obj->ram_start;
+    uint32_t previous_static_base = ((get_base_register)(((uint32_t)&get_base_register_blob) | 1))();
+    ((set_base_register)(((uint32_t)&set_base_register_blob) | 1))(obj->flash_algo->static_base);
     int32_t ret = ((CMSIS_Algo_Function_Init)obj->flash_algo->init)(obj->flash_start, 0, 0);
-    // revert back r9
-    static_base = previous_static_base;
+    ((set_base_register)(((uint32_t)&set_base_register_blob) | 1))(previous_static_base);
 
     core_util_critical_section_exit();
     return ret;
@@ -73,12 +86,10 @@ int32_t flash_erase_sector(flash_t *obj, uint32_t address)
 {
     core_util_critical_section_enter();
 
-    register uint32_t static_base __ASM("r9");
-    uint32_t previous_static_base = static_base;
-    static_base = obj->ram_start;
+    uint32_t previous_static_base = ((get_base_register)(((uint32_t)&get_base_register_blob) | 1))();
+    ((set_base_register)(((uint32_t)&set_base_register_blob) | 1))(obj->flash_algo->static_base);
     int32_t ret = ((CMSIS_Algo_Function_EraseSector)obj->flash_algo->erase_sector)(address);
-    // revert back r9
-    static_base = previous_static_base;
+    ((set_base_register)(((uint32_t)&set_base_register_blob) | 1))(previous_static_base);
 
     core_util_critical_section_exit();
     return ret;
@@ -88,12 +99,10 @@ int32_t flash_erase_chip(flash_t *obj)
 {
     core_util_critical_section_enter();
 
-    register uint32_t static_base __ASM("r9");
-    uint32_t previous_static_base = static_base;
-    static_base = obj->ram_start;
+    uint32_t previous_static_base = ((get_base_register)(((uint32_t)&get_base_register_blob) | 1))();
+    ((set_base_register)(((uint32_t)&set_base_register_blob) | 1))(obj->flash_algo->static_base);
     int32_t ret = ((CMSIS_Algo_Function_EraseChip)obj->flash_algo->erase_chip)();
-    // revert back r9
-    static_base = previous_static_base;
+    ((set_base_register)(((uint32_t)&set_base_register_blob) | 1))(previous_static_base);
 
     core_util_critical_section_exit();
     return ret;
@@ -102,12 +111,10 @@ int32_t flash_erase_chip(flash_t *obj)
 int32_t flash_program_page(flash_t *obj, uint32_t address, const page_t *page)
 {
     core_util_critical_section_enter();
-    register uint32_t static_base __ASM("r9");
-    uint32_t previous_static_base = static_base;
-    static_base = obj->ram_start;
+    uint32_t previous_static_base = ((get_base_register)(((uint32_t)&get_base_register_blob) | 1))();
+    ((set_base_register)(((uint32_t)&set_base_register_blob) | 1))(obj->flash_algo->static_base);
     int32_t ret = ((CMSIS_Algo_Function_ProgramPage)obj->flash_algo->program_page)(address, page->data_count , page->data);
-    // revert back r9
-    static_base = previous_static_base;
+    ((set_base_register)(((uint32_t)&set_base_register_blob) | 1))(previous_static_base);
 
     core_util_critical_section_exit();
     return ret;
@@ -117,12 +124,10 @@ int32_t flash_verify(flash_t *obj, uint32_t address, page_t *page)
 {
     core_util_critical_section_enter();
 
-    register uint32_t static_base __ASM("r9");
-    uint32_t previous_static_base = static_base;
-    static_base = obj->ram_start;
+    uint32_t previous_static_base = ((get_base_register)(((uint32_t)&get_base_register_blob) | 1))();
+    ((set_base_register)(((uint32_t)&set_base_register_blob) | 1))(obj->flash_algo->static_base);
     int32_t ret = ((CMSIS_Algo_Function_Verify)obj->flash_algo->verify)(address, page->data_count,  page->data);
-    // revert back r9
-    static_base = previous_static_base;
+    ((set_base_register)(((uint32_t)&set_base_register_blob) | 1))(previous_static_base);
 
     core_util_critical_section_exit();
     return ret;
