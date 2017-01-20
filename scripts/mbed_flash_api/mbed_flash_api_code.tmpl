@@ -21,28 +21,30 @@
 // This file is automagically generated
 
 // flash algo are in RAM
-static uint32_t {{name}}_FLM[] = {
-    {{algo['data']}}
+static uint32_t FLASH_ALGO[] = {
+    {{algo.gen_string(8, 8, "c")}}
 };
 
 static const flash_algo_t flash_algo_config = {
-    .init = {{Init}},
-    .uninit = {{UnInit}},
-    .erase_sector = {{EraseSector}},
-    .verify = {{Verify}},
-    .program_page = {{ProgramPage}},
-    .static_base = {{static_base}},
-    .algo_blob = {{name}}_FLM,
+    .init = (uint32_t)&FLASH_ALGO + {{'0x%x' % algo.symbols['Init']}},
+    .uninit = (uint32_t)&FLASH_ALGO + {{'0x%x' % algo.symbols['UnInit']}},
+    .erase_sector = (uint32_t)&FLASH_ALGO + {{'0x%x' % algo.symbols['EraseSector']}},
+    .program_page = (uint32_t)&FLASH_ALGO + {{'0x%x' % algo.symbols['ProgramPage']}},
+    .static_base = (uint32_t)&FLASH_ALGO + {{'0x%x' % algo.rw_start}},
+    .algo_blob = FLASH_ALGO,
+};
+
+static const sector_info_t sectors_info[] = {
+{%- for start, size  in algo.sector_sizes %}
+    {{ "{0x%x, 0x%x}" % (start, size) }}, 
+{%- endfor %}
 };
 
 static const flash_target_config_t flash_target_config = {
-    .page_size  = {{page_size}},
-    .sector_size = {{sector_size}};,
-    .sector_cnt = {{sector_count}},
-    .flash_start = {{flash_start}},
-    .flash_end = {{flash_end}},
-    .ram_start = {{ram_start}},
-    .ram_end = {{ram_end}},
+    .page_size  = {{'0x%x' % algo.page_size}},
+    .flash_start = {{'0x%x' % algo.flash_start}},
+    .flash_size = {{'0x%x' % algo.flash_size}},
+    .sectors = sectors_info,
 };
 
 typedef void (*set_base_register)(uint32_t);
@@ -60,16 +62,31 @@ static uint32_t get_base_register_blob[1] = {
     0x47704648
 };
 
+
+static uint32_t get_sector_index(flash_t *obj, uint32_t address)
+{
+    // check where address belongs to
+    size_t sector_index = 0;
+    size_t sectors_count = sizeof(obj->target_config->sectors) / sizeof(sector_info_t);
+    for (; sector_index < sectors_count; sector_index++) {
+        if ((address > obj->target_config->sectors[sector_index].start) && 
+            (address < (obj->target_config->sectors[sector_index].start +obj->target_config->sectors[sector_index].size))) {
+            break;
+        }
+    }
+    return sector_index;
+}
+
 int32_t flash_init(flash_t *obj)
 {
     core_util_critical_section_enter();
 
-    obj->target_config = &flash_target_config;
     obj->flash_algo = &flash_algo_config;
+    obj->target_config = &flash_target_config;
 
     uint32_t previous_static_base = ((get_base_register)(((uint32_t)&get_base_register_blob) | 1))();
     ((set_base_register)(((uint32_t)&set_base_register_blob) | 1))(obj->flash_algo->static_base);
-    int32_t ret = ((CMSIS_Algo_Function_Init)obj->flash_algo->init)(obj->flash_start, 0, 0);
+    int32_t ret = ((CMSIS_Algo_Function_Init)obj->flash_algo->init)(0, 0, 0);
     ((set_base_register)(((uint32_t)&set_base_register_blob) | 1))(previous_static_base);
 
     core_util_critical_section_exit();
@@ -82,8 +99,16 @@ int32_t flash_free(flash_t *obj)
     return 0;
 }
 
+
 int32_t flash_erase_sector(flash_t *obj, uint32_t address)
 {
+    size_t sector_index = get_sector_index(obj, address);
+
+    // erase sector boundary
+    if ((address % obj->target_config->sectors[sector_index].size) != 0) {
+        return -1;
+    }
+
     core_util_critical_section_enter();
 
     uint32_t previous_static_base = ((get_base_register)(((uint32_t)&get_base_register_blob) | 1))();
@@ -95,25 +120,28 @@ int32_t flash_erase_sector(flash_t *obj, uint32_t address)
     return ret;
 }
 
+
 int32_t flash_program_page(flash_t *obj, uint32_t address, const page_t *page)
-{
+{ 
+    // write size boundary
+    if ((address % obj->target_config->page_size) != 0) {
+        return -1; // TODO return types
+    }
+    //  size multiple of sectors
+    if ((page->data_count < obj->target_config->page_size) || (page->data_count % obj->target_config->page_size != 0)) {
+        return -1;
+    }
+
+    uint32_t sector_index = get_sector_index(obj, address);
+    // should not cross sector boundary
+    if (((address % obj->target_config->sectors[sector_index].size) + page->data_count) > obj->target_config->sectors[sector_index].size) {
+        return -1;
+    }
+
     core_util_critical_section_enter();
     uint32_t previous_static_base = ((get_base_register)(((uint32_t)&get_base_register_blob) | 1))();
     ((set_base_register)(((uint32_t)&set_base_register_blob) | 1))(obj->flash_algo->static_base);
     int32_t ret = ((CMSIS_Algo_Function_ProgramPage)obj->flash_algo->program_page)(address, page->data_count , page->data);
-    ((set_base_register)(((uint32_t)&set_base_register_blob) | 1))(previous_static_base);
-
-    core_util_critical_section_exit();
-    return ret;
-}
-
-int32_t flash_verify(flash_t *obj, uint32_t address, page_t *page)
-{
-    core_util_critical_section_enter();
-
-    uint32_t previous_static_base = ((get_base_register)(((uint32_t)&get_base_register_blob) | 1))();
-    ((set_base_register)(((uint32_t)&set_base_register_blob) | 1))(obj->flash_algo->static_base);
-    int32_t ret = ((CMSIS_Algo_Function_Verify)obj->flash_algo->verify)(address, page->data_count,  page->data);
     ((set_base_register)(((uint32_t)&set_base_register_blob) | 1))(previous_static_base);
 
     core_util_critical_section_exit();
