@@ -34,6 +34,7 @@ typedef struct {
 
 // Target configuration for flash and ram
 typedef struct {
+    const uint32_t page_size;
     const uint32_t sector_size;
     const uint32_t sector_cnt;
     const uint32_t flash_start;

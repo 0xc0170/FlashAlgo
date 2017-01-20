@@ -37,6 +37,7 @@ static const flash_algo_t flash_algo_config = {
 };
 
 static const flash_target_config_t flash_target_config = {
+    .page_size  = {{page_size}},
     .sector_size = {{sector_size}};,
     .sector_cnt = {{sector_count}},
     .flash_start = {{flash_start}},
