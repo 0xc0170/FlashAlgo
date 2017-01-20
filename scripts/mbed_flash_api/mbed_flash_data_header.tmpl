@@ -25,7 +25,6 @@ typedef struct {
     const uint32_t init;
     const uint32_t uninit;
     const uint32_t erase_page;
-    const uint32_t erase_chip;
     const uint32_t verify;
     const uint32_t program_page;
     const uint32_t static_base;
@@ -54,7 +53,6 @@ struct flash_s {
 typedef int (*CMSIS_Algo_Function_Init)(unsigned long adr, unsigned long clk, unsigned long fnc);
 typedef int (*CMSIS_Algo_Function_UnInit)(unsigned long fnc);
 typedef int (*CMSIS_Algo_Function_EraseSector)(unsigned long adr);
-typedef int (*CMSIS_Algo_Function_EraseChip)(void);
 typedef int (*CMSIS_Algo_Function_ProgramPage)(unsigned long adr, unsigned long sz, unsigned char *buf);
 typedef unsigned long (*CMSIS_Algo_Function_Verify)(unsigned long adr, unsigned long sz, unsigned char *buf);
 
